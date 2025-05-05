@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Line Charts</title>
+    <script src="../lib/d3.v5.min.js" type="text/javascript"></script>
+    <style type="text/css">
+        .overlay {
+            fill: none;
+            pointer-events: all;
+        }
+
+        .focus circle {
+            fill: none;
+            stroke: steelblue;
+        }
+    </style>
+</head>
+<body>
+<div id='signature'>gtai3</div>
+
+<script src="../lib/d3.v5.min.js" type="text/javascript"></script>
+<script>
+    function getCol(matrix, col) {
+        var column = [];
+        for (var i = 0; i < matrix.length; i++) {
+            column.push(matrix[i][col]);
+        }
+        return column; // return column data..
+    }
+
+    var margin = {top: 100, right: 100, bottom: 100, left: 100},
+        width = window.innerWidth - margin.left - margin.right,
+        height = window.innerHeight / 2 - margin.top - margin.bottom;
+
+    var parser = d3.timeParse("%Y-%m-%d");
+    var colorArray = [d3.schemeCategory10, d3.schemeAccent];
+
+    d3.dsv(",", "boardgame_ratings.csv", function (d) {
+        return d;
+    }).then(function (data) {
+        var slices = data.columns.slice(1).map(function (id) {
+            let rank_col_name = id.replace("=count", "=rank");
+            return {
+                id: id,
+                values: data.map(function (d) {
+                    return {
+                        date: parser(d.date),
+                        measurement: +d[id],
+                        rank_measurement: +d[rank_col_name]
+                    };
+                })
+            };
+        });
+
+        var colorScheme = d3.scaleOrdinal(colorArray[0]);
+        var final_array = [];
+        var chart_b_array = [];
+        var rank_regex = /(.+)\=/;
+        var chart_b_games = ['Catan', 'Codenames', 'Terraforming Mars', 'Gloomhaven'];
+
+        for (let i = 0; i < slices.length; i++) {
+            if (slices[i]['id'].includes('=count')) {
+                let added_line = slices[i];
+                added_line.color = colorScheme(i);
+                final_array.push(added_line);
+            }
+        }
+
+        for (let i = 0; i < final_array.length; i++) {
+            let game_name = final_array[i]['id'].match(rank_regex)[1];
+            if (chart_b_games.includes(game_name)) {
+                chart_b_array.push(final_array[i]);
+            }
+        }
+
+        var chart_b_array_sliced = JSON.parse(JSON.stringify(chart_b_array));
+
+        for (let i = 0; i < chart_b_array_sliced.length; i++) {
+            chart_b_array_sliced[i].values =
+                chart_b_array_sliced[i].values.filter(function (d, i) {
+                    return i > 1;
+                });
+        }
+
+        for (let i = 0; i < chart_b_array.length; i++) {
+            chart_b_array_sliced[i].values =
+                chart_b_array_sliced[i].values.filter(function (d, i) {
+                    return i % 3 == 0;
+                });
+        }
+
+        for (let i = 0; i < chart_b_array_sliced.length; i++) {
+            chart_b_array_sliced[i].values = chart_b_array_sliced[i].values.map(function (d) {
+                let cut_date = d.date.substring(0, 10);
+                return {
+                    date: parser(cut_date),
+                    measurement: d.measurement,
+                    rank_measurement: d.rank_measurement
+                };
+            });
+        }
+
+        var xScale = d3.scaleTime()
+            .domain(d3.extent(data, function (d) {
+                return parser(d.date);
+            }))
+            .range([0, width]);
+
+        var yScale = d3.scaleLinear()
+            .domain([0, d3.max(final_array, function (c) {
+                return d3.max(c.values, function (d) {
+                    return d.measurement;
+                });
+            })])
+            .rangeRound([height, 0]);
+
+        var yScaleSquare = d3.scaleSqrt()
+            .domain([0, d3.max(final_array, function (c) {
+                return d3.max(c.values, function (d) {
+                    return d.measurement;
+                });
+            })])
+            .rangeRound([height, 0]);
+
+        var yScaleLog = d3.scaleLog()
+            .domain([1, d3.max(final_array, function (c) {
+                return d3.max(c.values, function (d) {
+                    return d.measurement;
+                });
+            })])
+            .rangeRound([height, 0]);
+
+        var yaxis = d3.axisLeft()
+            .ticks(10)
+            .scale(yScale);
+
+        var xaxis = d3.axisBottom()
+            .ticks(d3.timeMonth.every(3))
+            .tickFormat(d3.timeFormat('%b %y'))
+            .scale(xScale);
+
+        var yaxissquare = d3.axisLeft()
+            .ticks(10)
+            .scale(yScaleSquare);
+
+        var yaxislog = d3.axisLeft()
+            .ticks(10)
+            .scale(yScaleLog);
+
+        var line = d3.line()
+            .x(function (d) {
+                return xScale(d.date);
+            })
+            .y(function (d) {
+                return yScale(d.measurement);
+            });
+
+        var lineSquare = d3.line()
+            .x(function (d) {
+                return xScale(d.date);
+            })
+            .y(function (d) {
+                return yScaleSquare(d.measurement);
+            });
+
+        var lineLog = d3.line()
+            .x(function (d) {
+                return xScale(d.date);
+            })
+            .y(function (d) {
+                return yScaleLog(d.measurement);
+            });
+
+
+        var svgA = d3.select("body").append("svg")
+            .attr("id", "svg-a")
+            .attr("transform", "translate(100, 100)")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom);
+
+        var plotA = svgA.append("g")
+            .attr("id", "plot-a")
+            .attr("width", width + margin.left + margin.right - 200);
+
+        var lineContainerA = plotA.append("g")
+            .attr("id", "lines-a");
+
+        var xaxisContainerA = plotA.append("g")
+            .attr("id", "x-axis-a")
+            .attr("class", "x axis")
+            .attr("transform", "translate(50," + height + ")")
+            .call(xaxis);
+
+        var yaxisContainerA = plotA.append("g")
+            .attr("id", "y-axis-a")
+            .attr("class", "y axis")
+            .attr("transform", "translate(49, 0)")
+            .call(yaxis);
+
+        var linesA = lineContainerA.selectAll("plotlines")
+            .data(final_array)
+            .enter()
+            .append("g");
+
+        var titleA = svgA.append("text")
+            .attr("id", "title-a")
+            .attr("transform", "translate(200, 15)")
+            .text("Number of Ratings 2016-2020");
+
+        linesA.append("path")
+            .style("fill", "none")
+            .style("stroke", function (d) {
+                return d.color;
+            })
+            .attr("transform", "translate(50, 0)")
+            .attr("d", function (d) {
+                return line(d.values);
+            });
+
+        linesA.append("text")
+            .datum(function (d) {
+                return {
+                    id: d.id,
+                    color: d.color,
+                    value: d.values[d.values.length - 1]
+                };
+            })
+            .attr("transform", function (d) {
+                return "translate(" + (xScale(d.value.date) + 10 + 32) + "," + (yScale(d.value.measurement) + 15) + ")";
+            })
+            .attr("x", 5)
+            .style("fill", function (d) {
+                return d.color;
+            })
+            .text(function (d) {
+                return (d.id.replace("=count", ""));
+            });
+
+        xaxisContainerA.append("text")
+            .attr("transform", "translate(" + (50 + width / 2) + "," + (height + 40) + ")")
+            .text("Month");
+
+        yaxisContainerA.append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("x", -(height / 2))
+            .attr("y", 8)
+            .text("Num of Ratings");
+
+
+        var svgB = d3.select("body").append("svg")
+            .attr("id", "svg-b")
+            .attr("transform", "translate(100, 0)")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom);
+
+        var plotB = svgB.append("g")
+            .attr("id", "plot-b")
+            .attr("width", width + margin.left + margin.right - 200);
+
+        var lineContainerB = plotB.append("g")
+            .attr("id", "lines-b");
+
+        var xaxisContainerB = plotB.append("g")
+            .attr("id", "x-axis-b")
+            .attr("class", "x axis")
+            .attr("transform", "translate(50," + height + ")")
+            .call(xaxis);
+
+        var yaxisContainerB = plotB.append("g")
+            .attr("id", "y-axis-b")
+            .attr("class", "y axis")
+            .attr("transform", "translate(49, 0)")
+            .call(yaxis);
+
+        var dotContainerB = plotB.append("g")
+            .attr("id", "symbols-b");
+
+        var linesB = lineContainerB.selectAll("plotlines")
+            .data(final_array)
+            .enter()
+            .append("g");
+
+        var titleB = svgB.append("text")
+            .attr("id", "title-b")
+            .attr("transform", "translate(160, 15)")
+            .text("Number of Ratings 2016-2020 with Rankings");
+
+        linesB.append("path")
+            .style("fill", "none")
+            .style("stroke", function (d) {
+                return d.color;
+            })
+            .attr("transform", "translate(50, 0)")
+            .attr("d", function (d) {
+                return line(d.values);
+            });
+
+        linesB.append("text")
+            .datum(function (d) {
+                return {
+                    id: d.id,
+                    color: d.color,
+                    value: d.values[d.values.length - 1]
+                };
+            })
+            .attr("transform", function (d) {
+                return "translate(" + (xScale(d.value.date) + 10 + 32) + "," + (yScale(d.value.measurement) + 15) + ")";
+            })
+            .attr("x", 5)
+            .style("fill", function (d) {
+                return d.color;
+            })
+            .text(function (d) {
+                return (d.id.replace("=count", ""));
+            });
+
+        xaxisContainerB.append("text")
+            .attr("transform", "translate(" + (50 + width / 2) + "," + (height + 40) + ")")
+            .text("Month");
+
+        yaxisContainerB.append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("x", -(height / 2))
+            .attr("y", 8)
+            .text("Num of Ratings");
+
+        var circlesB = dotContainerB.selectAll("g.dot")
+            .data(chart_b_array_sliced)
+            .enter().append("g")
+            .attr("class", "dot")
+            .attr("transform", "translate(50, 0)")
+            .attr("id", "symbols-b")
+            .style("fill", function (d) {
+                return d.color;
+            })
+            .selectAll("circle")
+            .data(function (d) {
+                return d.values;
+            })
+            .enter().append("circle")
+            .attr("r", 8)
+            .attr("cx", function (d) {
+                return xScale(d.date);
+            })
+            .attr("cy", function (d) {
+                return yScale(d.measurement);
+            });
+
+        var circlesTextB = dotContainerB.selectAll("g.text")
+            .data(chart_b_array_sliced)
+            .enter().append("g")
+            .attr("class", "dot")
+            .attr("transform", "translate(50, 0)")
+            .attr("id", "symbols-b")
+            .style("fill", "white")
+            .style("font-size", 8)
+            .attr("text-anchor", "middle")
+            .selectAll("circle")
+            .data(function (d) {
+                return d.values;
+            })
+            .enter().append("text")
+            .text(function (d) {
+                return d.rank_measurement;
+            })
+            .attr("x", function (d) {
+                return xScale(d.date);
+            })
+            .attr("y", function (d) {
+                return yScale(d.measurement);
+            });
+    }).catch(function (error) {
+        console.log(error);
+    });
+</script>
+</body>
+</html>
