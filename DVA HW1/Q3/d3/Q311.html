@@ -1,0 +1,134 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2487.3">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 12.0px 0.0px; font: 13.3px Times; -webkit-text-stroke: #000000; background-color: #ffffff}
+    p.p2 {margin: 0.0px 0.0px 12.0px 0.0px; font: 13.3px Times; -webkit-text-stroke: #000000; background-color: #ffffff; min-height: 16.0px}
+    p.p3 {margin: 0.0px 0.0px 12.0px 0.0px; font: 13.3px Times; -webkit-text-stroke: #000000}
+    span.s1 {font-kerning: none}
+    span.s2 {font-kerning: none; background-color: #ffffff}
+    span.Apple-tab-span {white-space:pre}
+  </style>
+</head>
+<body>
+<p class="p1"><span class="s1">&lt;!DOCTYPE html&gt; &lt;!-- cse6242 --&gt;<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1">&lt;!-- run: http-server &amp; --&gt;<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1">&lt;head&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;title&gt;Running Total of TMDb Movies by Year&lt;/title&gt;<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;style&gt;<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;!-- define CSS rules --&gt;<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/style&gt;<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1">&lt;/head&gt;</span></p>
+<p class="p1"><span class="s1">&lt;body&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">&lt;script src="lib/d3/d3.min.js"&gt;&lt;/script&gt;</span></p>
+<p class="p1"><span class="s1">&lt;script src="lib/d3-dsv/d3-dsv.min.js"&gt;&lt;/script&gt;<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1">&lt;script src="lib/d3-fetch/d3-fetch.min.js"&gt;&lt;/script&gt;<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1">&lt;svg id=“svg1”&gt;</span></p>
+<p class="p3"><span class="s2">&lt;script&gt;</span><span class="s1"><br>
+</span><span class="s2"><span class="Apple-converted-space">    </span>// define the dimensions and margins for the graph<span class="Apple-converted-space"> </span></span></p>
+<p class="p3"><span class="s2"><span class="Apple-converted-space">    </span>var w = 960;</span><span class="s1"><br>
+</span><span class="s2"><span class="Apple-converted-space">    </span>var h = 500;</span><span class="s1"><br>
+</span><span class="s2"><span class="Apple-converted-space">    </span>var barPadding = 5;</span><span class="s1"><br>
+</span><span class="s2"><span class="Apple-converted-space">    </span>var padding = 50;<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>// define function to parse time in years format<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>var formatTime = d3.timeParse("%Y")<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">     </span>// create scales x &amp; y for X and Y axis and set their ranges<span class="Apple-converted-space"> </span></span></p>
+<p class="p3"><span class="s2"><span class="Apple-converted-space">    </span>var x = d3.scaleTime().range([padding, w - padding]);</span><span class="s1"><br>
+</span><span class="s2"><span class="Apple-converted-space">    </span>var y = d3.scaleLinear().range([h-padding, padding]);<span class="Apple-converted-space"> </span></span></p>
+<p class="p3"><span class="s2">// append svg element to the body of the page</span><span class="s1"><br>
+</span><span class="s2">// set dimensions and position of the svg element</span><span class="s1"><br>
+</span><span class="s2">var svg = d3.select("body").append("svg”).attr(“id”,”svg1”).attr("width",w).attr("height",h);<span class="Apple-converted-space"> </span></span></p>
+<p class="p3"><span class="s2">// Get the data</span><span class="s1"><br>
+</span><span class="s2">var pathToCsv = "q3.csv"; // path to csv<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1">d3.dsv(",", pathToCsv, function (d) {<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>return {<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>// format data attributes if required<span class="Apple-converted-space"> </span></span></p>
+<p class="p3"><span class="s2"><span class="Apple-converted-space">    </span>year: d.year,</span><span class="s1"><br>
+</span><span class="s2"><span class="Apple-converted-space">    </span>running_total: d.running_total<span class="Apple-converted-space"> </span></span></p>
+<p class="p3"><span class="s2">}</span><span class="s1"><br>
+</span><span class="s2">}).then(function (data) {<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1">console.log(data); // you should see the data in your browser's developer tools console<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>/* Create bar plot using data from csv */<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>var min_year = data[0].year;<span class="Apple-converted-space"> </span></span></p>
+<p class="p3"><span class="s2"><span class="Apple-converted-space">    </span>//console.log(min_year)</span><span class="s1"><br>
+</span><span class="s2"><span class="Apple-converted-space">    </span>var max_year = data[data.length - 1].year;<span class="Apple-converted-space"> </span></span></p>
+<p class="p3"><span class="s2"><span class="Apple-converted-space">    </span>//console.log(max_year)</span><span class="s1"><br>
+</span><span class="s2"><span class="Apple-converted-space">    </span>var max_run = data[data.length - 1].running_total;<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>// set the domains of X and Y scales based on data<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>x.domain([new Date(min_year, 0, 1), new Date(max_year, 0, 1)]);<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>y.domain([0, max_run]);<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>// Add bars to svg - create new elements based on your data<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>svg.selectAll("rect")<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.data(data)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.enter()</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.append("rect”)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.attr("x", function(d,i){<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>//console.log(d.year);<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>//console.log(x(new Date(d.year)));<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>return x(new Date(d.year));<span class="Apple-converted-space"> </span></span></p>
+<p class="p3"><span class="s2"><span class="Apple-converted-space">    </span>})</span><span class="s1"><br>
+</span><span class="s2"><span class="Apple-converted-space">    </span>.attr("y", function(d, i){<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>return y(d.running_total);<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>})<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.attr("width", w / data.length - barPadding)<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.attr("height",function(d,i){<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>return h - padding - y(d.running_total);<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>})<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.attr("fill", "blue");<span class="Apple-converted-space"> </span></span></p>
+<p class="p3"><span class="s2"><span class="Apple-converted-space">    </span>// Add the X Axis</span><span class="s1"><br>
+</span><span class="s2"><span class="Apple-converted-space">    </span>var xAxis = d3.axisBottom(x).ticks(13);<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>svg.append("g")<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>.attr("class", "x_axis")<span class="Apple-tab-span">	</span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-tab-span">	</span>.attr("id", "x_axis")</span></p>
+<p class="p1"><span class="s1"><span class="Apple-tab-span">	</span>.attr("transform", "translate(0," + (h - padding) + ")")<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-tab-span">	</span>.call(xAxis);<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>// Add the text label for X Axis<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>svg.append("text")</span></p>
+<p class="p1"><span class="s1"><span class="Apple-tab-span">	</span>.attr("class", "x_axis_label")<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-tab-span">	</span>.attr("text-anchor", "end")<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-tab-span">	</span>.attr("x", w / 2)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-tab-span">	</span>.attr("y", h - 6)<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-tab-span">	</span>.text("Year")</span></p>
+<p class="p1"><span class="s1"><span class="Apple-tab-span">	</span>.attr("id", "x_axis_label");</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>// Add the Y Axis</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>yAxis = d3.axisLeft(y).ticks(9);<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>svg.append("g")</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space"> <span class="Apple-tab-span">	</span></span>.attr("class", "y_axis")</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space"> <span class="Apple-tab-span">	</span></span>.attr("id", "y_axis")</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space"> <span class="Apple-tab-span">	</span></span>.attr("transform", "translate(" + padding + ",0)")<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-tab-span">	</span>.call(yAxis);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>// Add the text label for Y axis<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>svg.append("text")</span></p>
+<p class="p1"><span class="s1"><span class="Apple-tab-span">	</span>.attr("class", "y_axis_label")<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-tab-span">	</span>.attr("text-anchor", "end")<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-tab-span">	</span>.attr("y", 6)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-tab-span">	</span>.attr("x", -200) .attr("transform", "rotate(-90)")</span></p>
+<p class="p1"><span class="s1"><span class="Apple-tab-span">	</span>.text("Running Total")<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-tab-span">	</span>.attr("id", "y_axis_label");</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">     </span>svg.append("text")<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-tab-span">	</span>.attr("x", w / 2)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-tab-span">	</span>.attr("y", padding / 3 * 2)<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-tab-span">	</span>.attr("text-anchor", "middle")</span></p>
+<p class="p1"><span class="s1"><span class="Apple-tab-span">	</span>.style("font-size", "30px")</span></p>
+<p class="p1"><span class="s1"><span class="Apple-tab-span">	</span>.text("Running Total of TMDb Movies by Year")<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-tab-span">	</span>.attr("id", "title");</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>svg.append("text")</span></p>
+<p class="p1"><span class="s1"><span class="Apple-tab-span">	</span>.attr("x", w - padding * 1.5)<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-tab-span">	</span>.attr("y", h - 4) .attr("text-anchor", "middle")<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-tab-span">	</span>.style("font-size", "10px")<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-tab-span">	</span>.text("astroup6")</span></p>
+<p class="p1"><span class="s1"><span class="Apple-tab-span">	</span>.attr("id", "credit");</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}).catch(function (error) {<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-tab-span">	</span>console.log(error);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>});</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/script&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space"> </span>&lt;/body&gt;</span></p>
+</body>
+</html>

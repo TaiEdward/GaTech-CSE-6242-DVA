@@ -1,0 +1,125 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2487.3">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Times; -webkit-text-stroke: #000000}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Times; -webkit-text-stroke: #000000; min-height: 14.0px}
+    span.s1 {font-kerning: none}
+    span.s2 {font-kerning: none; -webkit-text-stroke: 0px #000000}
+    span.Apple-tab-span {white-space:pre}
+  </style>
+</head>
+<body>
+<p class="p1"><span class="s1">&lt;!DOCTYPE html&gt;</span></p>
+<p class="p1"><span class="s1">&lt;!-- cse6242 --&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">&lt;!-- run: http-server &amp; --&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">&lt;head&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;style&gt; <span class="Apple-converted-space">   </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>/* Define css rules here */</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.bar {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>fill: steelblue;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;/style&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;title&gt;Running Total of TMDb Movies by Year&lt;/title&gt;</span></p>
+<p class="p1"><span class="s1">&lt;/head&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">&lt;body&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;svg width="960" height="500"&gt;&lt;/svg&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;script src="ib/d3/d3.min.js"&gt;&lt;/script&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;script src="lib/d3-dsv/d3-dsv.min.js"&gt;&lt;/script&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;script src="ib/d3-fetch/d3-fetch.min.js"&gt;&lt;/script&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;script&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>// define the dimensions and margins for the graph</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>var margin = ({top: 20, right: 30, bottom: 50, left: 50});</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>var height = 500;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>var width = 960;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>// define function to parse time in years format</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>var formatTime = d3.timeParse("%Y")</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>// create scales x &amp; y for X and Y axis and set their ranges</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>var xScale = d3.scaleBand()</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>.range([margin.left, width - margin.right])</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>.padding(0.4),</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>yScale = d3.scaleLinear()</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>.range([height-margin.bottom, margin.top]);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-tab-span">	</span><span class="Apple-converted-space">  <span class="Apple-tab-span">	</span></span>// set the id, dimensions and position of the svg element<span class="Apple-converted-space"> <span class="Apple-tab-span">	</span></span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>var svg = d3.select("body").append("svg").attr("id","svg1”)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>.attr(</span><span class="s2">"</span><span class="s1">width</span><span class="s2">"</span><span class="s1">, width+margin.left+margin.right)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>.attr(</span><span class="s2">"</span><span class="s1">height</span><span class="s2">"</span><span class="s1">, height +margin.top + margin.bottom)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>.append(</span><span class="s2">"</span><span class="s1">g</span><span class="s2">"</span><span class="s1">)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>.attr(</span><span class="s2">"</span><span class="s1">transform</span><span class="s2">"</span><span class="s1">, </span><span class="s2">"</span><span class="s1">translate</span><span class="s2">"</span><span class="s1">(</span><span class="s2">"</span><span class="s1">+ margin.left + </span><span class="s2">"</span><span class="s1">, </span><span class="s2">"</span><span class="s1">+margin.top + </span><span class="s2">"</span><span class="s1">) </span><span class="s2">"</span><span class="s1">);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>// Get the data</span></p>
+<p class="p1"><span class="s1"><span class="Apple-tab-span">	</span><span class="Apple-converted-space">  </span>var pathToCsv = "q3.csv";<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>// path to csv</span></p>
+<p class="p2"><span class="s1"><span class="Apple-tab-span">	</span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>d3.dsv(",", pathToCsv, function (d) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>return {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>// format data attributes if required</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>year: +d.year,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>running_total: +d.running_total</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}).then(function (data) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>console.log(data); // you should see the data in your browser's developer tools console<span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">      </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>/* Create bar plot using data from csv */</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>xScale.domain(data.map(function(d){ return d.year; }));</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>yScale.domain([0, d3.max(data, function(d){ return d.running_total; })]);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>// append svg element to the body of the page</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">      </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>g.append("g")</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.attr("transform", `translate(0,${height - margin.bottom})`)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.call(d3.axisBottom(xScale)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>.tickValues(xScale.domain().filter(function(d){</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>return !(d%10);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>})));</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">     </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>g.append("g")</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.attr("transform", `translate(${margin.left},0)`)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.call(d3.axisLeft(yScale).ticks(10));</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>g.selectAll(".bar")</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.data(data)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.enter().append("rect")</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.attr("class", "bar")</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.attr("x", function(d){return xScale(d.year);})</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.attr("y", function(d){return yScale(d.running_total);})</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.attr("width", xScale.bandwidth())</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.attr("height", function(d){return height-margin.bottom - yScale(d.running_total);});</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">      </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>// // Add the text label for X Axis</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">     </span>Var xAxis = d3.axisBottom(x).ticks(13);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">     </span>svg.append(“g”)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-tab-span">	</span>.attr(“class”,”x_axis”)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-tab-span">	</span>.attr(“id”,”x_axis”)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-tab-span">	</span>.attr(“transform”,”translate(0,”<span class="Apple-converted-space">  </span>+ (h - padding) +”)”)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-tab-span">	</span>.call(xAxis);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>// // Add the Y Axis</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>// svg.append()</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>// // Add the text label for Y axis</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>// svg.append()</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}).catch(function (error) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>console.log(error);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>});</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;/script&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">&lt;/body&gt;</span></p>
+</body>
+</html>
